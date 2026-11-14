@@ -80,7 +80,7 @@ $script:FoundRoots   = [System.Collections.Generic.List[hashtable]]::new()
 function Write-Banner {
     Write-Host ""
     Write-Host "  +------------------------------------------------------+" -ForegroundColor Cyan
-    Write-Host "  |   IRFlow Timeline - AI Artifact Collector  v1.0      |" -ForegroundColor Cyan
+    Write-Host "  |   IRFlow Timeline - AI Artifact Collector            |" -ForegroundColor Cyan
     Write-Host "  +------------------------------------------------------+" -ForegroundColor Cyan
     Write-Host ""
 }
