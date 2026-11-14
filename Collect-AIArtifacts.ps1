@@ -5,7 +5,7 @@
 
 .DESCRIPTION
     Discovers and collects AI assistant conversation artifacts from a Windows user profile
-    for forensic analysis in IRFlow Timeline (https://r3nzsec.github.io/irflow-timeline/).
+    for forensic analysis in IRFlow Timeline.
 
     Supported tools:
       Claude Code CLI, Claude Desktop (Cowork / local-agent-mode),
