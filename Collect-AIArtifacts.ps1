@@ -10,7 +10,7 @@
     Supported tools:
       Claude Code CLI, Claude Desktop (Cowork / local-agent-mode),
       OpenAI Codex CLI, xAI Grok Build, ChatGPT Desktop (standalone + MS Store),
-      Gemini CLI, Cursor (agent transcripts + IDE conversation DB),
+      Gemini CLI, Antigravity CLI (agy), Cursor (agent transcripts + IDE conversation DB),
       GitHub Copilot (VS Code products + CLI), Windsurf, Continue.dev
 
     Output mirrors the source directory structure so the collected folder can be loaded
@@ -301,6 +301,20 @@ function Collect-GeminiCli([hashtable]$Env, [string]$OutBase) {
     Write-Info "  $n file(s) matched"
 }
 
+function Collect-AntigravityCli([hashtable]$Env, [string]$OutBase) {
+    $agRoot = Join-Path $Env.USERPROFILE '.gemini\antigravity-cli'
+    if (-not (Test-Path $agRoot)) {
+        Write-Miss 'Antigravity CLI (~/.gemini/antigravity-cli/) - not found'; return
+    }
+    Write-Found "Antigravity CLI: $agRoot"
+    $script:FoundRoots.Add(@{ tool = 'antigravity-cli'; label = 'Antigravity CLI'; path = $agRoot })
+    $dest = Join-Path $OutBase 'antigravity-cli'
+    $n = Collect-Tree -SourceRoot $agRoot -DestRoot $dest `
+        -Include @('*.jsonl', '*.json', '*.db', '*.db-wal', '*.db-shm') `
+        -Tool 'antigravity-cli'
+    Write-Info "  $n file(s) matched"
+}
+
 function Collect-Cursor([hashtable]$Env, [string]$OutBase) {
     # Agent transcripts: ~/.cursor/projects/
     $cursorHome = if ($env:CURSOR_AGENT_HOME) { $env:CURSOR_AGENT_HOME }
@@ -497,7 +511,10 @@ function Write-Manifest([string]$OutDir, [string]$ProfileLabel, [string]$Compute
         files            = @($script:ManifestRows)
     }
     $jsonPath = Join-Path $OutDir 'irflow-manifest.json'
-    $summary | ConvertTo-Json -Depth 8 | Set-Content $jsonPath -Encoding UTF8
+    # Write JSON as UTF-8 without BOM — ConvertTo-Json | Set-Content -Encoding UTF8 adds a BOM
+    # on PS 5.1, which breaks strict JSON parsers. WriteAllText uses UTF-8 no-BOM on all versions.
+    [System.IO.File]::WriteAllText($jsonPath, ($summary | ConvertTo-Json -Depth 8),
+        [System.Text.Encoding]::UTF8)
 
     $txtPath = Join-Path $OutDir 'irflow-manifest.txt'
     $lines   = @(
@@ -558,8 +575,9 @@ foreach ($profileRoot in $profilesToScan) {
     Collect-ClaudeCode    $envMap $outBase
     Collect-Codex         $envMap $outBase
     Collect-GrokBuild     $envMap $outBase
-    Collect-GeminiCli     $envMap $outBase
-    Collect-Cursor        $envMap $outBase
+    Collect-GeminiCli       $envMap $outBase
+    Collect-AntigravityCli  $envMap $outBase
+    Collect-Cursor          $envMap $outBase
     Collect-ChatGPT       $envMap $outBase
     Collect-CopilotVSCode $envMap $outBase
     Collect-CopilotCli    $envMap $outBase
@@ -588,7 +606,10 @@ if (-not $InventoryOnly) {
         $zipPath = "$OutputPath.zip"
         Write-Info "Compressing to $zipPath ..."
         try {
-            Add-Type -AssemblyName System.IO.Compression.FileSystem
+            # Load assembly for PS 5.1; on PS 7 ZipFile is already in the runtime — suppress any error.
+            try { Add-Type -AssemblyName System.IO.Compression.FileSystem -ErrorAction Stop } catch {}
+            # CreateFromDirectory fails if the zip already exists (re-run scenario).
+            if (Test-Path $zipPath) { Remove-Item $zipPath -Force -ErrorAction Stop }
             [System.IO.Compression.ZipFile]::CreateFromDirectory($OutputPath, $zipPath)
             $zipMB = [Math]::Round((Get-Item $zipPath).Length / 1MB, 1)
             Write-Found "Archive: $zipPath  ($zipMB MB)"
