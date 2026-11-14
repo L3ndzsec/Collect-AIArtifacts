@@ -27,6 +27,7 @@ The collected folder mirrors the source directory structure so it can be loaded 
 | **xAI Grok Build** | `~/.grok/` |
 | **ChatGPT Desktop** (standalone, MS Store) | `%APPDATA%\OpenAI\ChatGPT\`, `%LOCALAPPDATA%\...` |
 | **Gemini CLI** | `~/.gemini/` |
+| **Antigravity CLI (agy)** | `~/.gemini/antigravity-cli/` |
 | **Cursor** (agent transcripts + IDE conversation DB) | `~/.cursor/`, `%APPDATA%\Cursor\User\` |
 | **GitHub Copilot** (VS Code products + CLI) | `%APPDATA%\Code\User\workspaceStorage\`, `~/.copilot/` |
 | **Windsurf** | `%APPDATA%\Windsurf\User\` |
@@ -97,6 +98,8 @@ AI-Artifacts-<timestamp>\
 ├── claude-code-cli\        # Claude Code CLI artifacts
 ├── claude-desktop\         # Claude Desktop session files
 ├── codex\                  # OpenAI Codex history
+├── gemini-cli\             # Gemini CLI artifacts
+├── antigravity-cli\        # Antigravity CLI (agy) artifacts
 ├── cursor-agent\           # Cursor agent transcripts
 ├── cursor-ide\             # Cursor IDE conversation databases
 ├── chatgpt\                # ChatGPT Desktop data
